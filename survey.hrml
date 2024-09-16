@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Survey</title>
+</head>
+<body>
+    <h1>Survey Form</h1>
+    <form id="survey-form"></form>
+    <button type="submit" onclick="submitSurvey()">Submit</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script>
+        // Load and parse CSV file
+        function loadCSV() {
+            fetch('survey.csv')
+                .then(response => response.text())
+                .then(csvText => {
+                    Papa.parse(csvText, {
+                        complete: function(results) {
+                            buildSurvey(results.data);
+                        }
+                    });
+                });
+        }
+
+        // Build the survey form from the CSV data
+        function buildSurvey(data) {
+            const form = document.getElementById('survey-form');
+            
+            data.forEach((row, index) => {
+                if (index === 0) return; // Skip header row
+                
+                const question = row[0];
+                const options = row.slice(1);
+
+                const questionDiv = document.createElement('div');
+                const questionLabel = document.createElement('label');
+                questionLabel.innerText = question;
+                questionDiv.appendChild(questionLabel);
+
+                options.forEach(option => {
+                    const optionDiv = document.createElement('div');
+                    const input = document.createElement('input');
+                    input.type = 'checkbox';
+                    input.name = `question-${index}`;
+                    input.value = option;
+                    
+                    const optionLabel = document.createElement('label');
+                    optionLabel.innerText = option;
+                    
+                    optionDiv.appendChild(input);
+                    optionDiv.appendChild(optionLabel);
+                    questionDiv.appendChild(optionDiv);
+                });
+
+                form.appendChild(questionDiv);
+            });
+        }
+
+        // Handle form submission
+        function submitSurvey() {
+            const form = document.getElementById('survey-form');
+            const formData = new FormData(form);
+
+            for (let [name, value] of formData.entries()) {
+                console.log(`${name}: ${value}`);
+            }
+            alert('Survey submitted! Check the console for results.');
+        }
+
+        // Load the CSV when the page is ready
+        window.onload = loadCSV;
+    </script>
+</body>
+</html>
